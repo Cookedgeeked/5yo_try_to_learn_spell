@@ -1,0 +1,205 @@
+{
+  "main": {
+    "id": "2bc1dc44cb8e77ee",
+    "type": "split",
+    "children": [
+      {
+        "id": "8c96322973c3bd96",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "4814b1a8a043b4dc",
+            "type": "leaf",
+            "state": {
+              "type": "markdown",
+              "state": {
+                "file": "gitとは/git phrase.md",
+                "mode": "source",
+                "source": false
+              },
+              "icon": "lucide-file",
+              "title": "git phrase"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "vertical"
+  },
+  "left": {
+    "id": "262ebbc762d7c3f9",
+    "type": "split",
+    "children": [
+      {
+        "id": "17b7dffcfad0e8e3",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "15ddbed0d6cd77c9",
+            "type": "leaf",
+            "state": {
+              "type": "file-explorer",
+              "state": {
+                "sortOrder": "alphabetical",
+                "autoReveal": false
+              },
+              "icon": "lucide-folder-closed",
+              "title": "Files"
+            }
+          },
+          {
+            "id": "48a757dac11ad638",
+            "type": "leaf",
+            "state": {
+              "type": "search",
+              "state": {
+                "query": "vim",
+                "matchingCase": true,
+                "explainSearch": false,
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical"
+              },
+              "icon": "lucide-search",
+              "title": "Search"
+            }
+          },
+          {
+            "id": "efb3d6a7870efd8f",
+            "type": "leaf",
+            "state": {
+              "type": "bookmarks",
+              "state": {},
+              "icon": "lucide-bookmark",
+              "title": "Bookmarks"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 200
+  },
+  "right": {
+    "id": "790b1864c186a68d",
+    "type": "split",
+    "children": [
+      {
+        "id": "1ea565184f07129d",
+        "type": "tabs",
+        "children": [
+          {
+            "id": "12c60fa3650b6f7b",
+            "type": "leaf",
+            "state": {
+              "type": "backlink",
+              "state": {
+                "file": "Untitled/4.md",
+                "collapseAll": false,
+                "extraContext": false,
+                "sortOrder": "alphabetical",
+                "showSearch": false,
+                "searchQuery": "",
+                "backlinkCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-coming-in",
+              "title": "Backlinks for 4"
+            }
+          },
+          {
+            "id": "a934f172e835870a",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Untitled/4.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from 4"
+            }
+          },
+          {
+            "id": "57b57f69b598874c",
+            "type": "leaf",
+            "state": {
+              "type": "tag",
+              "state": {
+                "sortOrder": "frequency",
+                "useHierarchy": true,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-tags",
+              "title": "Tags"
+            }
+          },
+          {
+            "id": "a263fa4f78623a95",
+            "type": "leaf",
+            "state": {
+              "type": "outline",
+              "state": {
+                "file": "Hack for kindergartner.md",
+                "followCursor": false,
+                "showSearch": false,
+                "searchQuery": ""
+              },
+              "icon": "lucide-list",
+              "title": "Outline of Hack for kindergartner"
+            }
+          }
+        ]
+      }
+    ],
+    "direction": "horizontal",
+    "width": 300,
+    "collapsed": true
+  },
+  "left-ribbon": {
+    "hiddenItems": {
+      "switcher:Open quick switcher": false,
+      "graph:Open graph view": false,
+      "canvas:Create new canvas": false,
+      "daily-notes:Open today's daily note": false,
+      "templates:Insert template": false,
+      "command-palette:Open command palette": false,
+      "bases:Create new base": false
+    }
+  },
+  "active": "4814b1a8a043b4dc",
+  "lastOpenFiles": [
+    "gitとは/git.md",
+    "5yolearninspell/4.md",
+    "gitとは/git phrase.md",
+    "gitとは",
+    "5yolearninspell/command.md",
+    "5yolearninspell/1.md",
+    "5yolearninspell/考え方、ヒント、抜け方.md",
+    "5yolearninspell/違い.md",
+    "5yolearninspell/System.md",
+    "5yolearninspell/common phrases.md",
+    "5yolearninspell/5.md",
+    "5yolearninspell/portscan.md",
+    "5yolearninspell/3.md",
+    "5yolearninspell/打ち方.md",
+    "Untitled 1",
+    "Internal Protocol for Energetic Hacking Practice (Personal Operation Manual).pdf",
+    "波動的ハッキング実践のための内的プロトコル（行動指針書）.pdf",
+    "Untitled.canvas",
+    "The Exploration of Inner Vibration and the Hacking Approach to Manifesting Reality.pdf",
+    "言語/Untitled.md",
+    "言語",
+    "幼稚園児にもわかるハッキング、リナックス基礎",
+    "Untitled.md",
+    "5yolearninspell",
+    "Hack for kindergartner.md",
+    "波動的ハッキング実践のための内的プロトコル（行動指針書）.md",
+    "Internal Protocol for Energetic Hacking Practice (Personal Operation Manual).md",
+    "Untitled.base",
+    "a love letter.pdf",
+    "The Exploration of Inner Vibration and the Hacking Approach to Manifesting Reality.md"
+  ]
+}
