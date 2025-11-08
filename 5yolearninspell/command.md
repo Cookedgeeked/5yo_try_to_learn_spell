@@ -1,3 +1,244 @@
+
+### ==DHCPの詳細情報はここからは見えない==
+- 「DHCPサーバーのIP」や「リース時間」などはこのコマンドでは出てこない。
+- もし知りたければ：
+`sudo dhclient -v enp0s3`
+ **`dhclient`**
+- これはDHCPクライアント。
+- 「宇宙のIPを借りたい！」とネットワークに向かって叫ぶ者。
+2. **`-v`**
+- verbose（詳細表示）モード。ネットワークとのやり取りを全部見せてもらうモード。交渉の内容（DISCOVER → OFFER → REQUEST → ACK）を可視化してくれる。
+2. **`enp0s3`**
+- どのネットワークインターフェースに向かって交渉するか。
+...
+DHCPDISCOVER on enp0s3 to 255.255.255.255 port 67 interval 6
+DHCPOFFER of 10.0.2.15 from 10.0.2.2
+DHCPREQUEST for 10.0.2.15 on enp0s3 to 255.255.255.255 port 67
+DHCPACK of 10.0.2.15 from 10.0.2.2
+2. あなたのVMが受け取ったIP
+- ここで、**10.0.2.15** があなたのVMに割り当てられるIP。
+- 10.0.2.2 は **DHCPサーバーの存在**。
+VM「ねえ、IP貸して！」 → `DHCPDISCOVER`
+サーバー「これどう？」 → `DHCPOFFER 10.0.2.15`
+ VM「じゃあそれで！」 → `DHCPREQUEST`
+ サーバー「オッケー、あなたのものね」 → `DHCPACK`
+
+結果として、「自分のIP」と「DHCPサーバーのIP」を確認できる
+
+
+
+
+
+hydra -L users.txt -P cewl.txt dc-2 http-form-post '/wp-login.php:log=^USER^&pwd=^PASS^&wp-submit=Log In&testcookie=1:S=Location'  
+==このくそ長いコマンドは何なの一個一個の意味おしえてあとこんなの覚えられないよ== 
+
+hydra`
+- ツール本体。
+`dc-2`
+- ターゲットのホスト名またはIP。
+`http-form-post`
+- 攻撃モジュール。HTTPのフォーム送信でログインを試すモード。
+`'/wp-login.php:log=^USER^&pwd=^PASS^&wp-submit=Log In&testcookie=1:S=Location'`
+- モジュールに渡す「フォーム仕様」文字列。`:`で区切られた**3つのパート構成**
+①`/wp-login.php`
+- ログインフォームへのパス（ターゲットのルートからの相対パス）
+②`log=^USER^&pwd=^PASS^&wp-submit=Log In&testcookie=1`
+- POST ボディ（フォームデータウェブサイトに手紙（POSTデータ）を送るとき、手紙の**中身**の部分のことを「POSTボディ」っていうよ。）。`^USER^` と `^PASS^` がそれぞれユーザ/パスワードの置き換え箇所。`log=^USER^`  
+ユーザ名フィールド。HTMLの`<input name="log">`に対応。`^USER^`はhydraがユーザ名で置き換えるプレースホルダ。
+`pwd=^PASS^`  
+パスワードフィールド。HTMLの`<input name="pwd">`に対応。`^PASS^`はhydraがパスワードで置き換えるプレースホルダ。
+- users.txt に `taro` がある
+- cewl.txt に `apple123` がある。
+この組み合わせを試すと、ツールはひな形をこう変える：  
+`log=taro&pwd=apple123`
+これがサーバに送られるPOSTデータ（フォームの中身）。
+**POST** は英語で「投函する」「手紙を出す」という意味から来てる。  
+→ 「手紙の中身をウェブサイトに投げる」ってイメージ
+- `&` 繋ぐ。
+③`S=Location`
+- 「成功判定」。レスポンスに `Location` ヘッダが含まれていたら成功と見る（ェブサイトにログインするとき、サーバはログインに**成功した人**を別のページに移動させることがある。  
+そのときサーバは「次はこのページに行ってね」と教えるために、**HTTPヘッダ**の中に
+
+`Location: 〜〜〜`
+という行を入れて送る。
+だからHydra（ハイドラ）はこう判断する：
+ 「サーバの返事に `Location` っていうメッセージが入ってたら、ログインできたってことだな！」 `S=` は Success 条件）
+フォーム文字列は ①path②body③:判定` の形
+
+
+**ログインフォームの仕組み**
+name value input や <button> タグの属性これらの意味を教えてどういう役割なのかも
+分かりやすく整理する。
+ 1. `<input>` タグ
+フォームでユーザから情報を受け取るためのタグ。種類（`type`）で振る舞いが変わる。
+主な属性と意味
+|属性|役割|
+|`type`|入力の種類を指定 (`text`, `password`, `submit`, `hidden` など)|
+|`name`|サーバに送るときの「キー名」。必須。例: `name="log"`|
+|`value`|**デフォルト値や送信時に送る値**。`submit` の場合はボタンに表示される文字も兼ねる|
+例
+html
+<input type="text" name="log" value="">
+<input type="password" name="pwd">
+<input type="hidden" name="testcookie" value="1">
+<input type="submit" name="wp-submit" value="Log In">
+
+ `log` と `pwd` はユーザ名とパスワードとしてサーバに送られる。
+- `testcookie` はユーザ入力なしで送られる固定値（サーバがクッキー利用可否を確認）。
+- `wp-submit` はボタンが押されたことをサーバに伝える。
+2. `<button>` タグ
+ボタンを作るタグ。`<input type="submit">` と似た役割だが、中に表示文字やHTMLを自由に書ける。
+#### 属性と意味
+|属性|役割|
+|`type`|ボタンの種類 (`submit`, `button`, `reset`)|
+|`name`|サーバに送るキー名|
+|`value`|サーバに送る値（送信時にnameとセットで送られる）|
+例
+```html
+<button type="submit" name="wp-submit" value="Log In">Log In</button>
+- `<input type="submit">` と同じく、押されたらフォーム送信。
+### 3. まとめ（役割感覚）
+- `name` = 「サーバに送るラベル」。必須。
+- `value` = 「そのラベルに対して送る値」。
+- `<input>` や `<button>` の種類で挙動が変わる（入力欄、隠し値、送信ボタンなど）。
+- 
+デフォルト値や送信時に送る値どういうこと- **デフォルト値** → 入力欄に何も書かなかったときに送られる値
+    
+- **送信時に送る値** → ボタンやhiddenのように、ユーザが触らなくても必ず送られる値「デフォルト値や送信時に送る値」というのは、**箱の中に書かれている手紙（value）のこと**- **value = 箱の中の手紙の中身**
+    
+- **デフォルト値 = 箱に最初から入っている手紙の内容**
+    
+- **送信時に送る値 = ボタンや隠し箱の中に入っている、必ず送られる手紙**
+簡単に言うと `value` は **そのフォーム項目がサーバに送る「中身」** です。
+
+*- **value = 箱の中の手紙の中身**
+    - `<input>` や `<button>` の **`value` 属性** = **その項目が送るデータの中身**
+    
+- **デフォルト値**
+- **デフォルト値 = 箱に最初から入っている手紙の内容**
+    
+- **送信時に送る値 = ボタンや隠し箱の中に入っている、必ず送られる手紙***
+- 普通の入力欄 (`type="text"` や `type="password"`)
+    - ユーザが入力した文字列が送られる。
+    - でも `<input type="text" name="log" value="default">` の場合は、入力しなければ `"default"` が送られる → これが「デフォルト値」。
+- ボタン (`type="submit"` や `<button>`)
+    - ボタンを押すと、サーバに `name=value` が送られる。
+    - 例: `<input type="submit" name="wp-submit" value="Log In">`
+        - 押すと `wp-submit=Log In` が送られる。
+        - これは「送信時に送る値」。ユーザが変えられない固定値。
+- hidden（隠しフィールド）
+    - `<input type="hidden" name="testcookie" value="1">`
+    - ユーザに見えないけど、フォームを送信すると必ず `testcookie=1` がサーバに送られる。
+要するに **`value` はその項目が持つ「送るデータ本体」** で、
+- 入力欄ならユーザ入力値
+- ボタンやhiddenなら固定値をサーバに渡すためのもの、と覚えればOK。
+タグ　しるし
+</h1> <form name="loginform" id="loginform" action="[http://dc-2/wp-login.php](view-source:http://dc-2/wp-login.php)" method="post"> <p> <label for="user_login">Username or Email Address<br /> <input type="text" name="log" id="user_login" class="input" value="" size="20" /></label> </p> <p> <label for="user_pass">Password<br /> <input type="password" name="pwd" id="user_pass" class="input" value="" size="20" /></label> </p> <p class="forgetmenot"<label for="rememberme"><input name="rememberme" type="checkbox" id="rememberme" value="forever" /> Remember Me</label></p> <p class="submit"> <input type="submit" name="wp-submit" id="wp-submit" class="button button-primary button-large" value="Log In" /> <input type="hidden" name="redirect_to" value="http://192.168.56.104/wp-admin/" /> <input type="hidden" name="testcookie" value="1" /> </p> </form> <p id="nav"> 
+
+1. `wp-submit=Log In` が何をしているか
+- これは**送信ボタンの name=value** そのままをPOSTで送っているだけ。
+1. `testcookie=1` が何をしているか
+- これは **クッキー利用可否チェック用の隠しフィールド**。、**クッキーはタロウくんが誰かを教えてあげる魔法のお手紙**
+- 目的はサーバが「このクライアントがクッキーを受け入れるか」を確認すること。
+- 実際の流れ（簡略）：ページ表示時にサーバがテスト用のクッキーをセットする。フォーム送信時にその hidden フィールドが一緒に来る。サーバは受信時にテスト用クッキーが存在するかを確認して、クッキー不可ならログイン処理を拒否したり別の挙動をとる
+- クッキーは **「この子は遊んでいいよ」っていう魔法の名前札**、ひみつメモは **「名前札持ってるよ！」って知らせる小さな手紙**
+- だから hydra でログイン試行するなら、この hidden フィールドを含めて送る方が実際のブラウザと同じ振る舞いになり成功判定が正しく働く。省くとサーバが別挙動をして「失敗」と判断される可能性がある。
+
+
+
+
+
+
+
+==$ cat pass.txt | grep -P 'sh$'==
+### `-P` の意味と語源（由来）
+- `-P`
+-は **Perl-compatible regular expressions**（PCRE）を使うためのフラグ。
+- **Perl-compatible（Perl互換）**
+- Perl というプログラミング言語で作られた、超強力な正規表現の書き方に合わせていること。
+- `sh$` → 「行の最後が sh で終わる行」という意味の呪文。regular expressions（正規表現）
+
+`ssh webadmin@$IP` は **SSHでリモートに接続するときに「webadmin」というユーザー名で `$IP`（相手のIPアドレス）に入る** 命令だよ
+- `ssh`：安全にリモートのマシンに入るためのコマンド（Secure SHell）。
+- `webadmin@`：接続先で使う**ユーザー名**。ここで指定したアカウントでログインを試みる。
+- `$IP`：接続先の**ホスト名**か**IPアドレス**。環境変数の形で書いているだけで、実行時は具体的な値に展開される。
+base64 -d
+base64：文字列を Base64 形式に変換したり戻したりするコマンド
+-d：デコード（decode）するためのオプション
+
+
+スクリプトを取る方法
+dirscript -f ~/vulnhub/napping/session-$(date +%F_%H%M%S).log
+
+終了したいときは `exit` か `Ctrl+D`。
+
+==`os.system('/usr/bin/bash /dev/shm/revshell.sh')` の意味（一行ごとに）==
+- `os.system(...)`
+     **Python** の関数で、引数に渡した文字列をシェル経由で実行する命令。
+- `'/usr/bin/bash /dev/shm/revshell.sh'`
+    - `/usr/bin/bash` → これは **bashシェルの実行ファイル**へのフルパス。
+    - `/dev/shm/revshell.sh` → これは **スクリプトファイルへのパス**（ **bash を使ってそのスクリプトを実行する** という意味になる。
+
+### 6) 実行権限を付ける（必要なら）
+```bash
+chmod +x /path/to/your/script.sh
+```
+
+
+
+
+==echo "C%40ughtm3napping123" | php -r "echo urldecode(file_get_contents('php://stdin'));"　このコマンドを一つ一つ説明して==
+#① `echo "C%40ughtm3napping123"`- **`echo "C%40ughtm3napping123"`** → 「外の世界から手紙を送る魔法のチューブ」「魔法の杖で手紙を唱える」
+- **意味**：「この文字を画面に見せてね！」
+#② `|`   「魔法のチューブをプログラムに繋ぐ」「杖で出した言葉を、魔法のチューブに流す」
+ 「紙に書いた文字を、隣の魔法使いphpにそっと手渡す小道」を作る感じ。
+#③ `php -r "..."`  「プログラムの中で魔法を使う場所」
+- **意味**：PHP という魔法の道具を使って、中の呪文（`"..."`）を実行する。
+- `-r` は「ファイルに書かなくても、ここに書いた呪文をすぐ実行するよ！」って意味。
+ 「紙を渡された魔法使いが、すぐに呪文を唱える」感じ。
+#④ `file_get_contents('php://stdin')` 「その魔法のチューブの中身をぜーんぶ吸い上げるストロー」
+- **意味**：「さっきパイプで渡された文字を拾ってね」
+- `'php://stdin'` は「標準入力」という場所で、さっきの文字が入ってる箱のこと。**stdin** = Standard Input（標準入力）キーボードから打ち込む文字、他のプログラムから送られてくるデータなど。
+php://stdin → PHP専用の特別な入口。プログラムに流れ込む標準入力のストリーム川。 file_get_contents → その入口からすべてのデータを一気に吸い上げる。　*魔法のチューブ（パイプ `|`）**に流すと、手紙が川（ストリーム）に乗る感じになる。*
+#⑤ `urldecode(...)`
+ 「紙に書かれた秘密の暗号を解読して、本当の文字に戻す
+#⑥ `echo ...;`
+- **意味**：最後に、変換した文字を画面に出す。
+- 小学生向けに言うと、「魔法で解読した文字を、みんなに見せてあげる」感じ。
+
+
+
+ip a
+
+sudo netdiscover -i enp0s3 -r 192.168.56.0/24 
+### `sudo`
+- 「神の力で行動する魔法」
+- 普通の自分の力では届かない領域にアクセスするための呪文みたいなもの
+### `netdiscover`
+- 「ネットワークの魂を感じ取るセンサー」
+- あなたの周りに存在するPCやデバイスをスキャンしてリストアップする
+- 例えると「近所の幽霊や妖精の場所をマッピングする魔法の棒」
+### `-i`
+- 正式には **interface**（インターフェース）の略
+- どの回路（ネットワークカード）を使うか指定するスイッチ　　どの耳で世界の声を聞くか
+- エネルギー的には「どのゲートから世界とつながるか選ぶ」感じ
+### `-r`
+- 正式には **range**（範囲）の略
+- どの範囲のIPをスキャンするかを指定する
+- エネルギー的には「どのエリアの幽霊を見つけに行くか宣言する」感じ
+
+
+
+#portscan
+$sudo nmap -sC -sV -Pn -p- $IP -oN portscan_result.txt
+
+-sC common
+-Pn  no ping
+-p- 全ポート
+- `-oN` は **“output Normal”** の略
+    
+- nmap のスキャン結果を **標準的な読みやすいテキスト形式で保存** するオプション
+
 ### 1) vimでファイルを開く
 ```bash
 vim /path/to/your/script.sh
@@ -8,11 +249,6 @@ vim /path/to/your/script.sh
 3. `#!/bin/bash` を入力。
 4. `Esc` → `:wq` → Enter。
 
-
-
-
-
-
 #vi ファイル名
 挿入モードに入る（どれかを押す）
 
@@ -22,11 +258,8 @@ i : カーソルの位置から挿入
 :w 保存
 :wq 保存して終了
 
-
-
 sudo python3 -m http.server 80 　　この-mはなに
 `-m` は「モジュールをスクリプトとして実行する」オプション。
-
 
 コマンド
 wfuzz -c -z file,/home/bitch/SecLists/Discovery/Web-Content/raft-large-files.txt --hc 404 "$IP/FUZZ"
@@ -35,7 +268,6 @@ wfuzz -c -z file,/home/bitch/SecLists/Discovery/Web-Content/raft-large-files.txt
 #pwd print working directory
 現在の作業ディレクトリのパスを調べる
 #pwd-p (physical) 本当のパスを表示　notリンク 
-
 
 #ls list ファイルやディレクトリの一覧を表示する,
 役目は渡されたものの中身や名前を表示する

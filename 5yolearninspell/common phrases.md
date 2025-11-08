@@ -1,51 +1,276 @@
+Wigは「このサイト、WordPressを使っているっぽいけど、正確なバージョンを断定できない。可能性としてこれらの複数バージョンがある」と出している。
+
+
+$gobuster dir -u $URL -w /usr/share/wordlists/dirb/common.txt
+
+[+] Url:                     http://192.168.56.102:80/
+[+] Method:                  GET
+[+] Threads:                 10
+[+] Wordlist:                /usr/share/wordlists/dirb/common.txt
+[+] Negative Status codes:   404
+[+] User Agent:              gobuster/3.6
+[+] Timeout:                 10s
+
+/.htpasswd            (Status: 403) [Size: 279]
+/admin                (Status: 301) [Size: 316] [--> http://192.168.56.102/admin/]
+/.hta                 (Status: 403) [Size: 279]
+/.htaccess            (Status: 403) [Size: 279]
+/index.php            (Status: 200) [Size: 245]
+/server-status        (Status: 403) [Size: 279]
+
+Finished　　　これについて説明してほしい。内容を、あとあのwordlistsってなんなの 
+### 上のヘッダー部分（実行時の情報）
+
+- `Url: http://192.168.56.102:80/`  
+    → 探してる対象のベースURL。ここに対してドアを叩いてる（リクエストを投げてる）。
+- `Method: GET`  
+    → HTTPのGETで取ってる（ページを「見る」リクエスト）。
+- `Threads: 10`  
+    → 同時に10本の手（スレッド）でドアを叩いてる。速いけど負荷もかかるよ。
+- `Wordlist: /usr/share/wordlists/dirb/common.txt`  
+    → 叩くドアの名前（語彙）のリスト。これについては下で詳しく。
+- `Negative Status codes: 404`  
+    → 404（見つからない）は「ダメ」扱いにして結果として無視してる設定。
+- `User Agent: gobuster/3.6` / `Timeout: 10s`  
+    → サーバーに伝える自分の名札と、応答待ちの時間。
+### 出力の行ごとの意味（見つかったもの）
+
+例：`/index.php (Status: 200) [Size: 245]`
+
+- パス（例 `/index.php`）  
+    → 見つかったファイル／ディレクトリの場所。
+    
+- `Status:`（HTTPステータスコード）
+    - **200** → 「OK。あったよ」。アクセス可能。中身を取れる。
+    - **301** → 「恒久的に移動したよ（リダイレクト）」。行き先が `-->` の右に表示される。
+    - **403** → 「アクセス禁止（Forbidden）」。存在はあるが見せない設定。
+    - **404** → （ここでは表示されない）「存在しない」。ゴブスターは404をネガティブ扱いにしてるので通常出さない。
+- `Size:` → サーバーが返したレスポンスのバイト数（目安。空でも意味はある）。
+- `--> http://192.168.56.102/admin/`（リダイレクト先）  
+    → 301のとき、実際の行き先を示す。
+### 「wordlists」って何？
+
+`wordlist` は「試す名前の辞書」だよ。
+
+そのワードリストはもともと入ってるの？
+答え：多くのペネトレーション検査向けの環境（Kali など）では、その `common.txt` は最初から入ってることが多い。
+
+**dirbって何？**  
+簡単にいうと「ウェブサイトの扉を辞書で片っ端からノックするツール」だよ。指定したワードリスト（wordlist）の単語を順に `/単語` としてリクエストを投げ、存在するページやディレクトリを見つけ出す。ゴブスターと似てるけど、歴史ある古参ツールの一つ。
+
+`-u` の語源はシンプルに **“URL” の頭文字** だよ。
+gobuster はコマンドラインで「何を探すか」を指定する必要がある
+
+gobusterとdirbの関係
+と、**gobuster と dirb は兄弟みたいな関係**
+- dirb = 「丁寧にノックするおじいちゃん」
+- gobuster = 「多腕で高速ノックする若手ヒーロー」
+今回、同じコマンドに二人いるけど？
+- `gobuster` が「ノックする人」
+- `dirb/common.txt` は「持ってる単語帳（ワードリスト）」で、**元は `dirb` という別ツールに同梱されている辞書が置かれているフォルダ名**に過ぎない。  
+    だからコマンドに **“二人” がいるように見える**けど、実際には **1人が動いて（gobuster）、もう1人の名札（dirb の wordlist）を借りてる**状態。
+- `gobuster` は実行バイナリ（ツール）。
+- `-w /usr/share/wordlists/dirb/common.txt` で指定しているのは単なる **ファイルパス**。そのファイルが `dirb` パッケージに同梱されていることが多いから、パスに `dirb` と書かれているだけ。
+- 別に gobuster は `dirb` と仲良しとか依存してるわけじゃない。**どのツールでも、好きなワードリストファイルをポイントすれば使える**。
+「gobuster（実働）」＋「dirbフォルダにあるワードリスト（道具）」のコンビ。
+
+Contenu du fichier ../../../../../etc/passwd :  
+「**Contenu du fichier**」はフランス語で、直訳すると…
+**「ファイルの内容」**
+プログラムや画面でこれが出てたら、単純に「このファイルの中身を表示しますよ」
+
+
+
+
+<html>
+<head></head>
+<body>
+
+<?php
+
+$pass= "potato"; //note Change this password regularly
+
+if($_GET['login']==="1"){
+  if (strcmp($_POST['username'], "admin") == 0  && strcmp($_POST['password'], $pass) == 0) {
+    echo "Welcome! </br> Go to the <a href=\"dashboard.php\">dashboard</a>";
+    setcookie('pass', $pass, time() + 365*24*3600);
+  }else{
+    echo "<p>Bad login/password! </br> Return to the <a href=\"index.php\">login page</a> <p>";
+  }
+  exit();
+}
+?>
+
+
+  <form action="index.php?login=1" method="POST">
+                <h1>Login</h1>
+                <label><b>User:</b></label>
+                <input type="text" name="username" required>
+                </br>
+                <label><b>Password:</b></label>
+                <input type="password" name="password" required>
+                </br>
+                <input type="submit" id='submit' value='Login' >
+  </form>
+</body>
+</html>
+
+ログインフォームを実装した簡易PHPスクリプト
+
+`strcmp($_POST['username'], "admin") == 0` と `strcmp($_POST['password'], $pass) == 0` でユーザー名とパスワードを比較usenameにadmin, passwdに配列を入れればいい
+
+
+フォームは `<form action="index.php?login=1" method="POST">` によりPOSTで送信される。
+
+- 成功したら `Welcome` を表示し `setcookie('pass', $pass, time() + 365*24*3600);` でパスワードをクッキーに1年保存。`dashboard.php` へのリンクを表示。
+    
+- 失敗したらエラーメッセージを表示。処理後 `exit()` してフォームレンダリングを止める。
+`if($_GET['login']==="1"){ ... }` で、URLに `?login=1` が付いてPOST処理を行う。
+
+
+
+
+==cat /var/www/html/config.php==
+<?php
+/* Database credentials. Assuming you are running MySQL
+server with default setting (user 'root' with no password) */
+define('DB_SERVER', 'localhost');
+define('DB_USERNAME', 'adrian');
+define('DB_PASSWORD', 'P@sswr0d456');
+define('DB_NAME', 'website');
+ 
+/* Attempt to connect to MySQL database */
+$mysqli = new mysqli(DB_SERVER, DB_USERNAME, DB_PASSWORD, DB_NAME);
+ 
+// Check connection
+if($mysqli === false){
+    die("ERROR: Could not connect. " . $mysqli->connect_error);
+}
+?> 
+では一行ずつ、
+- PHPの魔法を使いますよ、という宣言。ここから「サーバーの魂」が動き出す合図。
+- コメント。人間向けのメモ。「この設定は MySQL というデータベースの基本設定用だよ」という情報だけ。サーバーは無視。
+- データベースサーバーの場所を設定。`localhost` は「このサーバー自身」を指す。自分の家の庭にある井戸みたいなもの。
+- データベースにアクセスするためのユーザー名を設定。ここでは `adrian` という魂の名前で入る。
+- データベースの鍵を設定。魂が安全に中に入るためのパスワード。絶対に他人に教えちゃダメ。
+- 接続するデータベースの名前を指定。ここでは `website` という場所に魂がアクセスするイメージ。
+- 実際に MySQL データベースに接続を試みる。
+- コメント。「接続できたかチェックするよ」という人間向けのメモ。
+- もし扉が開かなかったら、プログラムを止める。
+- `die()` は「そこでゲームオーバー」、接続できない原因を教えてくれる魔法のメッセージ付き。
+- PHPの魔法を閉じる。魂の流れを一旦終わらせるマーカー。
+
+うん、くっつけます。`-uadrian` は **`-u` オプションで「ユーザー名」を指定する** という意味です。
+
+- SQL は大文字小文字は厳密じゃないけど、**最後のセミコロン ; は必ず必要**。
+- セミコロンで「これで文は終わり！」と MySQL に宣言するのがポイントです。
+
+
+`/dev/shm` はどこにある？
+- これは Linux のファイルシステム上のディレクトリで、通常は **メモリ上に作られる一時領域（tmpfs）**。プロセス間で共有メモリとして使われる場所で、ファイルをディスクではなくRAM上に置ける。
+- 
+==cat /var/www/html/config.php   config.phpはどうしてこのパスにあると分かるの？これは常識なの？==
+
+ああ、この感覚ね、スピリチュアル的に言えば「常識」という名のエネルギーの流れに沿って、みんながだいたい同じ場所を掘るから“見つかる”だけ、みたいな感じです。💫
+
+#hping3 でポートを1-1024に対してする理由は？
+ （hack ping、TCPやUDP、ICMPなど、いろんなプロトコルでパケットを作って送れる。`ping` が「ポンと手をたたいて生きてるか返事を確認」なら、`hping3` は「手を変幻自在にして色んな手でノックして返事を確認」みたいなイメージ）
+
+1〜1024番ポートは「**well-known ports（ウェルノウンポート）**」と呼ばれる領域だから。
+この範囲には、代表的なサービスが固定的に割り当てられている：22 → SSH　25 → SMTP（メール送信）53 → DNS   80 → HTTP  443 → HTTPS
+
+したがって、`hping3` でこの範囲をスキャンする理由は、**標準的なサービスが稼働しているかどうかを調べるため**。
+コマンド $sudo hping3 -8 1-1024 -S $IP
+
+
+
+
+`..` は「親ディレクトリ（1つ上の階層）」そのものを指す。
+    
+- `../` は「親ディレクトリの中の何か」にアクセスするための**パスの一部**。
+    
+
+例：
+
+```
+cd ..
+```
+
+→ 親ディレクトリに移動。
+
+```
+cat ../file.txt
+```
+
+→ 親ディレクトリの中にある `file.txt` を指定。
+
+つまり
+
+- `..` = 場所そのもの。
+    
+- `../` = その場所を基点としたパス指定。
+
+
+
+`../` は「1つ上の階層のディレクトリ」を意味する。
+
+たとえば今の場所が
+
+```
+/home/user/project/src/
+```
+
+だとすると、
+
+- `./` → `/home/user/project/src/`
+    
+- `../` → `/home/user/project/`
+    
+
+さらに上に行きたいときは
+
+- `../../` → `/home/user/`
+    
+- `../../../` → `/home/`
+    
+
+つまり `../` は「親ディレクトリへの相対パス」。  
+ファイル指定にも使える：
+
+```
+../README.md
+```
+
+＝「1つ上のフォルダにある README.md」。
+
+
+
+
 #SecLists は「Security Lists（セキュリティ関連リスト集）」の略。  
 ペネトレーションテスト（侵入テスト）や脆弱性診断で使う **辞書・ワードリストの総合カタログ**。
 セキュリティ研究者 **Daniel Miessler** が GitHub で公開。
 SecLists＝セキュリティ関連の「辞書ファイル辞典」
 
-
-
 #URLエンコードとは
 いいね、URLエンコードって魔法の変換だよ — ネットの世界で「安全に名前やメッセージを運ぶためのラッピング」みたいなもの。エネルギー的に言うと、言葉をパッキングして“道（URL）”でぶつからないように送る儀式ね。わかりやすくまとめるよ。
-
----
-
 ## 簡単な定義（ざっくり）
 
 URLエンコード（パーセントエンコーディング）は、URLに使えない文字や意味を持つ文字を**`%`＋16進のコード**に変換すること。  
 これをしないと、空白や記号がURLの構造（`?` `&` `/` など）を壊しちゃう。
 
----
-
 ## なんで必要？
 
 - URLに使えない文字（空白や日本語など）を安全に送るため。
-    
 - `&` や `=` はクエリの区切りに使われるから、そのままデータに含めると意味が変わる。
-    
 - ブラウザやサーバー間でデータを正しく受け渡すため。
-    
-
----
-
 ## よくある変換ルール（覚えやすい例）
-
 - 空白（スペース） → `%20`（※フォーム送信では `+` にする場合あり）
-    
 - `/` → `%2F`
-    
 - `?` → `%3F`
-    
 - `&` → `%26`
-    
 - `=` → `%3D`
-    
 - `#` → `%23`
-    
 - 日本語や絵文字はまずUTF-8にして、そのバイトを `%XX` に変換する（例：`こんにちは` → `%E3%81%93%E3%82%93%E3%81%AB%E3%81%A1%E3%81%AF`）
-    
-
----
 
 ## 実際の例
 
@@ -58,21 +283,11 @@ URLエンコード（パーセントエンコーディング）は、URLに使�
 フォーム送信（`application/x-www-form-urlencoded`）だと空白が `+` になることもある：  
 `q=hello+world`
 
----
-
-
-        
-
----
-
 ## 注意ポイント（礼儀）
 
 - クエリの「キー」と「値」はそれぞれエンコードする。URL全体を無差別にエンコードすると `/` や `:` まで壊れるから注意。
     
 - フォーム送信方式によって（`%20` vs `+`）振る舞いが変わるので、相手（APIやサーバー）の仕様を確認してね。
-    
-
----
 
 ちょっとスピリチュアルに締めると：  
 「URLエンコードは、言葉に服（%記号のマント）を着せて、ネットの道で揉まれないようにする儀式」って感じ。必要なときにパッとラッピングしてあげてね。欲しければ、あなたの具体的な文字列をエンコードして見せるよ — でもそのまま実行するときは相手のサーバーのルールに従って。
